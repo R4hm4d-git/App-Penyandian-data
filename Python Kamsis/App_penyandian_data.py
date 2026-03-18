@@ -62,27 +62,20 @@ def dual_decrypt(cipher_bytes, key_val, iv):
 session_key = 150
 iv = 42
 
-print("=== PROGRAM ENKRIPSI HYBRID (RSA + DUAL CBC-OFB) ===")
 input_user = input("Masukkan pesan yang ingin dikunci: ")
-
-print("\n[Mengeksekusi Enkripsi Gabungan...]")
 
 raw_encrypted_msg = dual_encrypt(input_user, session_key, iv)
 encrypted_session_key = rsa_encrypt(session_key, (e, n))
 
 b64_cipher = base64.b64encode(bytes(raw_encrypted_msg)).decode()
 
-print("\n--- HASIL ENKRIPSI ---")
 print(f"Kunci Sesi Terkunci (RSA) : {encrypted_session_key}")
 print(f"Pesan Terenkripsi (Base64): {b64_cipher}")
-
-print("\n[Mengeksekusi Dekripsi Gabungan...]")
 
 decrypted_session_key = rsa_decrypt(encrypted_session_key, (d, n))
 
 cipher_bytes = list(base64.b64decode(b64_cipher))
 pesan_asli = dual_decrypt(cipher_bytes, decrypted_session_key, iv)
 
-print("\n--- HASIL DEKRIPSI ---")
 print(f"Kunci Sesi Berhasil Dibuka: {decrypted_session_key}")
 print(f"Pesan Asli Ditemukan      : {pesan_asli}")
