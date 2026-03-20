@@ -120,7 +120,7 @@ def dual_decrypt(cipher_bytes, key_val, iv):
     return pesan_asli
 
 st.title("🔐 Updated Kriptografi Hibrida")
-st.markdown("Aplikasi simulasi **Enkripsi Berlapis (Cascade CBC-OFB)** yang diamankan dengan pertukaran kunci **RSA**.")
+st.markdown("Aplikasi simulasi **Enkripsi Berlapis (CBC-OFB)** yang diamankan dengan pertukaran kunci **RSA**.")
 
 tab1, tab2 = st.tabs(["🔒 Enkripsi Pesan", "🔓 Dekripsi Pesan"])
 
