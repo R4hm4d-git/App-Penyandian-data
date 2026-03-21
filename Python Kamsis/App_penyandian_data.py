@@ -73,7 +73,7 @@ def xor_cbc_encrypt(plain_text, key_val, iv):
     encrypted_bytes = []
     prev = iv
     for char in plain_text:
-        mixed = (ord(char) ^ key_val ^ prev) % 256
+        mixed = ((ord(char) ^ key_val) ^ prev) % 256
         encrypted_bytes.append(mixed)
         prev = mixed
     return encrypted_bytes
@@ -82,7 +82,7 @@ def xor_cbc_decrypt(cipher_bytes, key_val, iv):
     decrypted_text = ""
     prev = iv
     for byte in cipher_bytes:
-        orig_char_code = (byte ^ key_val ^ prev) % 256
+        orig_char_code = ((byte ^ key_val) ^ prev) % 256
         decrypted_text += chr(orig_char_code)
         prev = byte
     return decrypted_text
@@ -119,8 +119,8 @@ def dual_decrypt(cipher_bytes, key_val, iv):
     pesan_asli = xor_cbc_decrypt(lapis1_bytes, key_val, iv)
     return pesan_asli
 
-st.title("🔐 Kriptografi Hibrida")
-st.markdown("Aplikasi simulasi **Enkripsi Berlapis (CBC-OFB)** yang diamankan dengan pertukaran kunci **RSA**.")
+st.title("🔐 Updated Kriptografi Hibrida")
+st.markdown("Aplikasi simulasi **Enkripsi Berlapis (Cascade CBC-OFB)** yang diamankan dengan pertukaran kunci **RSA**.")
 
 tab1, tab2 = st.tabs(["🔒 Enkripsi Pesan", "🔓 Dekripsi Pesan"])
 
