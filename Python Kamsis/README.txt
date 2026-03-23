@@ -1,4 +1,4 @@
-Kriptografi Hibrida: RSA & CBC-OFB
+Kriptografi Hybrid: RSA & CBC-OFB
 
 Aplikasi penyandian data digital berbasis web yang mengimplementasikan arsitektur Kriptografi Hybrid (Gabungan). Sistem ini menggabungkan kecepatan enkripsi simetris (CBC-OFB) dengan keamanan distribusi kunci asimetris (RSA). 
 
