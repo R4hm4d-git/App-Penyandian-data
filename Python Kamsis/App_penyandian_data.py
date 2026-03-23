@@ -1,4 +1,5 @@
 import streamlit as st
+import base64 
 
 st.set_page_config(page_title="Kripto Hibrida", page_icon="🔐")
 
@@ -37,12 +38,10 @@ def custom_b64encode(data_bytes):
 
 def custom_b64decode(b64_string):
     result = []
-    
     b64_string = b64_string.replace('=', '')
     
     for i in range(0, len(b64_string), 4):
         chunk = b64_string[i:i+4]
-        
         n = 0
         for j in range(len(chunk)):
             n += B64_CHARS.index(chunk[j]) << (18 - 6 * j)
@@ -73,7 +72,7 @@ def xor_cbc_encrypt(plain_text, key_val, iv):
     encrypted_bytes = []
     prev = iv
     for char in plain_text:
-        mixed = ((ord(char) ^ key_val) ^ prev) % 256
+        mixed = ((ord(char) ^ prev) ^ key_val) % 256 
         encrypted_bytes.append(mixed)
         prev = mixed
     return encrypted_bytes
@@ -82,7 +81,7 @@ def xor_cbc_decrypt(cipher_bytes, key_val, iv):
     decrypted_text = ""
     prev = iv
     for byte in cipher_bytes:
-        orig_char_code = ((byte ^ key_val) ^ prev) % 256
+        orig_char_code = ((byte ^ key_val) ^ prev) % 256 
         decrypted_text += chr(orig_char_code)
         prev = byte
     return decrypted_text
@@ -119,51 +118,93 @@ def dual_decrypt(cipher_bytes, key_val, iv):
     pesan_asli = xor_cbc_decrypt(lapis1_bytes, key_val, iv)
     return pesan_asli
 
-st.title("🔐 Kriptografi Hibrida")
-st.markdown("Aplikasi simulasi **Enkripsi Berlapis (CBC-OFB)** yang diamankan dengan pertukaran kunci **RSA**.")
+st.title("🔐 Updated Kriptografi Hibrida")
+st.markdown("Aplikasi simulasi **Enkripsi Berlapis (Cascade CBC-OFB)** yang diamankan dengan pertukaran kunci **RSA**.")
 
 tab1, tab2 = st.tabs(["🔒 Enkripsi Pesan", "🔓 Dekripsi Pesan"])
 
 with tab1:
-    st.subheader("Masukkan Pesan Rahasia")
+    st.subheader("Masukkan Pesan Teks Rahasia")
     input_user = st.text_area("Ketik pesan di sini:", height=100)
     
-    if st.button("Enkripsi Sekarang", type="primary"):
+    if st.button("Enkripsi Teks Sekarang", type="primary"):
         if input_user:
             raw_encrypted_msg = dual_encrypt(input_user, session_key, iv)
             encrypted_session_key = rsa_encrypt(session_key, (e, n))
-            
             b64_cipher = custom_b64encode(raw_encrypted_msg)
             
             st.success("Pesan berhasil dienkripsi!")
             st.text_input("Kunci Sesi Terkunci (RSA):", value=str(encrypted_session_key), disabled=True)
             st.text_area("Pesan Terenkripsi (Base64):", value=b64_cipher, height=100, disabled=True)
-            st.info("Silakan salin kedua data di atas untuk melakukan dekripsi di tab sebelah.")
         else:
             st.warning("Pesan tidak boleh kosong.")
 
+    st.divider() 
+    
+    st.subheader("Atau Enkripsi File Gambar")
+    uploaded_img = st.file_uploader("Unggah gambar rahasia:", type=['png', 'jpg', 'jpeg'])
+    
+    if uploaded_img is not None:
+        st.image(uploaded_img, caption="Gambar sebelum dienkripsi", width=250)
+        if st.button("Enkripsi Gambar Sekarang", type="primary"):
+           
+            bytes_data = uploaded_img.getvalue()
+            img_string = base64.b64encode(bytes_data).decode('utf-8')
+            
+            raw_encrypted_img = dual_encrypt(img_string, session_key, iv)
+            encrypted_session_key = rsa_encrypt(session_key, (e, n))
+            b64_cipher_img = custom_b64encode(raw_encrypted_img)
+            
+            st.success("Gambar berhasil dienkripsi menjadi teks rahasia!")
+            st.text_input("Kunci Sesi Terkunci (RSA) untuk Gambar:", value=str(encrypted_session_key), disabled=True)
+            st.text_area("Salin Teks Enkripsi Gambar Ini:", value=b64_cipher_img, height=150)
+
+
 with tab2:
-    st.subheader("Buka Pesan Rahasia")
+    st.subheader("Buka Pesan Teks Rahasia")
     b64_input = st.text_area("Masukkan Pesan Terenkripsi (Base64):", height=100)
     key_input = st.text_input("Masukkan Kunci Sesi (Angka RSA):")
     
-    if st.button("Dekripsi Sekarang", type="primary"):
+    if st.button("Dekripsi Teks Sekarang", type="primary"):
         if b64_input and key_input:
             try:
                 key_int = int(key_input)
                 decrypted_session_key = rsa_decrypt(key_int, (d, n))
-                
                 cipher_bytes = custom_b64decode(b64_input)
-                
                 pesan_asli = dual_decrypt(cipher_bytes, decrypted_session_key, iv)
                 
-                st.success("Pesan berhasil dibuka!")
+                st.success("Pesan teks berhasil dibuka!")
                 st.write(f"**Kunci Sesi Asli yang Didapat:** `{decrypted_session_key}`")
                 st.text_area("Isi Pesan Asli:", value=pesan_asli, height=100, disabled=True)
-                
             except ValueError:
                 st.error("Gagal! Pastikan Kunci Sesi RSA hanya berupa angka.")
             except Exception as err:
-                st.error("Gagal membuka pesan. Pastikan teks Base64 utuh dan tidak terpotong.")
+                st.error("Gagal membuka pesan. Pastikan teks Base64 utuh.")
+        else:
+            st.warning("Harap isi teks Base64 dan Kunci RSA.")
+
+    st.divider()
+    
+    st.subheader("Buka Gambar Rahasia")
+    b64_img_input = st.text_area("Masukkan Teks Enkripsi Gambar:", height=150)
+    key_img_input = st.text_input("Masukkan Kunci Sesi (Angka RSA) untuk Gambar:")
+    
+    if st.button("Dekripsi Gambar Sekarang", type="primary"):
+        if b64_img_input and key_img_input:
+            try:
+                key_int = int(key_img_input)
+                decrypted_session_key = rsa_decrypt(key_int, (d, n))
+                
+                cipher_bytes = custom_b64decode(b64_img_input)
+                
+                img_string = dual_decrypt(cipher_bytes, decrypted_session_key, iv)
+                
+                img_bytes = base64.b64decode(img_string)
+                
+                st.success("Gambar berhasil dipulihkan!")
+                st.write(f"**Kunci Sesi Asli yang Didapat:** `{decrypted_session_key}`")
+                st.image(img_bytes, caption="Gambar Rahasia Terbuka!")
+            except Exception as e:
+                st.error("Gagal! Pastikan kunci benar dan teks enkripsi gambar utuh.")
         else:
             st.warning("Harap isi teks Base64 dan Kunci RSA.")
