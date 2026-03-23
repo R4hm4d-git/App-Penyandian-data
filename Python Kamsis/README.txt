@@ -16,4 +16,11 @@ Arsitektur Sistem
 4. Dekripsi:Menggunakan Private Key RSA untuk membuka *Session Key, yang kemudian digunakan untuk membuka gembok OFB dan CBC secara mundur.
 
 Cara Penggunaan
-1. Jalankan kode lalu input plaintext yang akan dienkripsi
+1. Buka web klik tab enkripsi, lalu pilih enkripsi txt, text atau gambar dan docs
+2. Upload file untuk txt, gambar dan docs, ketik text untuk text (disarankan 1 enkripsi pada waktu yang sama)
+3. Tekan tombol enkripsi
+4. Setelah enkripsi akan diberi ciphertext dan kunci sesi yang akan digunakan untuk dekripsi (jangan lupa kunci enkripsi)
+5. Copy ciphertext pada tab deskripsi lalu masukkan kunci sesi pada tab enkripsi
+6. Tekan tombol deskripsi
+7. Pesan plaintext dan kunci sesi asli akan diberi kepada user unttuk deskripsi txt dan text
+8. Untuk gambar/docs akan diberi file aslinya yang dapat didownload
