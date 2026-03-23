@@ -1,17 +1,15 @@
 import streamlit as st
 import base64
 
-st.set_page_config(page_title="Kripto Hibrida", page_icon="🔐")
+st.set_page_config(page_title="Kripto Hybrid", page_icon="🔐")
 
 B64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
 def custom_b64encode(data_bytes):
     result = ""
     padding = 0
-    
     for i in range(0, len(data_bytes), 3):
         chunk = data_bytes[i:i+3]
-        
         if len(chunk) == 3:
             n = (chunk[0] << 16) + (chunk[1] << 8) + chunk[2]
         elif len(chunk) == 2:
@@ -20,12 +18,10 @@ def custom_b64encode(data_bytes):
         elif len(chunk) == 1:
             n = (chunk[0] << 16)
             padding = 2
-            
         n1 = (n >> 18) & 63
         n2 = (n >> 12) & 63
         n3 = (n >> 6) & 63
         n4 = n & 63
-        
         result += B64_CHARS[n1] + B64_CHARS[n2]
         if padding == 2:
             result += "=="
@@ -33,25 +29,21 @@ def custom_b64encode(data_bytes):
             result += B64_CHARS[n3] + "="
         else:
             result += B64_CHARS[n3] + B64_CHARS[n4]
-            
     return result
 
 def custom_b64decode(b64_string):
     result = []
     b64_string = b64_string.replace('=', '')
-    
     for i in range(0, len(b64_string), 4):
         chunk = b64_string[i:i+4]
         n = 0
         for j in range(len(chunk)):
             n += B64_CHARS.index(chunk[j]) << (18 - 6 * j)
-            
         result.append((n >> 16) & 255)
         if len(chunk) > 2:
             result.append((n >> 8) & 255)
         if len(chunk) > 3:
             result.append(n & 255)
-            
     return result
     
 n = 3233
@@ -118,6 +110,14 @@ def dual_decrypt(cipher_bytes, key_val, iv):
     pesan_asli = xor_cbc_decrypt(lapis1_bytes, key_val, iv)
     return pesan_asli
 
+def deteksi_ekstensi(bytes_data):
+    if bytes_data.startswith(b'\x89PNG'): return '.png', 'image/png'
+    elif bytes_data.startswith(b'\xff\xd8'): return '.jpg', 'image/jpeg'
+    elif bytes_data.startswith(b'%PDF'): return '.pdf', 'application/pdf'
+    elif bytes_data.startswith(b'PK\x03\x04'): return '.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    elif bytes_data.startswith(b'\xd0\xcf\x11\xe0'): return '.doc', 'application/msword'
+    else: return '.txt', 'text/plain'
+
 st.title("🔐 Kriptografi Hybrid")
 st.markdown("Aplikasi simulasi **Enkripsi Berlapis (CBC-OFB)** yang diamankan dengan pertukaran kunci **RSA**.")
 
@@ -125,7 +125,6 @@ tab1, tab2 = st.tabs(["🔒 Enkripsi Pesan", "🔓 Dekripsi Pesan"])
 
 with tab1:
     st.subheader("Masukkan Pesan Teks Rahasia")
-    
     uploaded_txt = st.file_uploader("Pilih unggah file .txt (Opsional):", type=['txt'])
     isi_teks_default = ""
     
@@ -171,7 +170,6 @@ with tab1:
 
 with tab2:
     st.subheader("Buka Pesan Teks Rahasia")
-    
     with st.form("form_dekripsi_teks"):
         b64_input = st.text_area("Masukkan Pesan Terenkripsi (Base64):", height=100)
         key_input = st.text_input("Masukkan Kunci Sesi (Angka RSA):")
@@ -198,31 +196,32 @@ with tab2:
     st.divider()
     
     st.subheader("Buka File Rahasia (Gambar / Dokumen)")
+    b64_file_input = st.text_area("Masukkan Teks Enkripsi File:", height=150)
+    key_file_input = st.text_input("Masukkan Kunci Sesi (Angka RSA) untuk File:")
     
-    with st.form("form_dekripsi_file"):
-        b64_file_input = st.text_area("Masukkan Teks Enkripsi File:", height=150)
-        key_file_input = st.text_input("Masukkan Kunci Sesi (Angka RSA) untuk File:")
-        submitted_file = st.form_submit_button("Dekripsi File Sekarang", type="primary")
-        
-        if submitted_file:
-            if b64_file_input and key_file_input:
-                try:
-                    key_int = int(key_file_input)
-                    decrypted_session_key = rsa_decrypt(key_int, (d, n))
-                    
-                    cipher_bytes = custom_b64decode(b64_file_input)
-                    file_string = dual_decrypt(cipher_bytes, decrypted_session_key, iv)
-                    file_bytes = base64.b64decode(file_string)
-                    
-                    st.success("File berhasil dipulihkan! Silakan unduh di bawah ini.")
-                    st.write(f"**Kunci Sesi Asli yang Didapat:** `{decrypted_session_key}`")
-                    
-                    st.download_button(
-                        label="Unduh File Hasil Dekripsi",
-                        data=file_bytes,
-                        file_name="file_rahasia_terbuka",
-                    )
-                except Exception:
-                    st.error("Gagal! Pastikan kunci benar dan teks enkripsi file utuh.")
-            else:
-                st.warning("Harap isi teks Base64 dan Kunci RSA.")
+    if st.button("Dekripsi File Sekarang", type="primary", key="btn_dekripsi_file"):
+        if b64_file_input and key_file_input:
+            try:
+                key_int = int(key_file_input)
+                decrypted_session_key = rsa_decrypt(key_int, (d, n))
+                
+                cipher_bytes = custom_b64decode(b64_file_input)
+                file_string = dual_decrypt(cipher_bytes, decrypted_session_key, iv)
+                file_bytes = base64.b64decode(file_string)
+                
+                ekstensi_asli, tipe_mime = deteksi_ekstensi(file_bytes)
+                nama_file_otomatis = f"file_rahasia_terbuka{ekstensi_asli}"
+                
+                st.success("File berhasil dipulihkan! Silakan unduh di bawah ini.")
+                st.write(f"**Kunci Sesi Asli yang Didapat:** `{decrypted_session_key}`")
+                
+                st.download_button(
+                    label=f"Unduh File ({ekstensi_asli})",
+                    data=file_bytes,
+                    file_name=nama_file_otomatis,
+                    mime=tipe_mime
+                )
+            except Exception as e:
+                st.error(f"Gagal! Pastikan kunci benar dan teks enkripsi file utuh. (Kode Error: {e})")
+        else:
+            st.warning("Harap isi teks Base64 dan Kunci RSA.")
