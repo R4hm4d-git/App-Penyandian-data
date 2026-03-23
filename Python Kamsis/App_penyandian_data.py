@@ -118,7 +118,7 @@ def dual_decrypt(cipher_bytes, key_val, iv):
     pesan_asli = xor_cbc_decrypt(lapis1_bytes, key_val, iv)
     return pesan_asli
 
-st.title("🔐 Kriptografi Hibrida")
+st.title("🔐 Kriptografi Hybrid")
 st.markdown("Aplikasi simulasi **Enkripsi Berlapis (CBC-OFB)** yang diamankan dengan pertukaran kunci **RSA**.")
 
 tab1, tab2 = st.tabs(["🔒 Enkripsi Pesan", "🔓 Dekripsi Pesan"])
@@ -142,8 +142,10 @@ with tab1:
             b64_cipher = custom_b64encode(raw_encrypted_msg)
             
             st.success("Pesan berhasil dienkripsi!")
-            st.text_input("Kunci Sesi Terkunci (RSA):", value=str(encrypted_session_key), disabled=True)
-            st.text_area("Pesan Terenkripsi (Base64):", value=b64_cipher, height=100, disabled=True)
+            st.write("**Kunci Sesi Terkunci (RSA):**")
+            st.code(str(encrypted_session_key), language="text")
+            st.write("**Pesan Terenkripsi (Base64):**")
+            st.code(b64_cipher, language="text")
         else:
             st.warning("Pesan tidak boleh kosong.")
 
@@ -162,58 +164,65 @@ with tab1:
             b64_cipher_file = custom_b64encode(raw_encrypted_file)
             
             st.success("File berhasil dienkripsi menjadi teks rahasia!")
-            st.text_input("Kunci Sesi Terkunci (RSA) untuk File:", value=str(encrypted_session_key), disabled=True)
-            st.text_area("Salin Teks Enkripsi File Ini:", value=b64_cipher_file, height=150)
+            st.write("**Kunci Sesi Terkunci (RSA) untuk File:**")
+            st.code(str(encrypted_session_key), language="text")
+            st.write("**Teks Enkripsi File (Base64):**")
+            st.code(b64_cipher_file, language="text")
 
 with tab2:
     st.subheader("Buka Pesan Teks Rahasia")
-    b64_input = st.text_area("Masukkan Pesan Terenkripsi (Base64):", height=100)
-    key_input = st.text_input("Masukkan Kunci Sesi (Angka RSA):")
     
-    if st.button("Dekripsi Teks Sekarang", type="primary"):
-        if b64_input and key_input:
-            try:
-                key_int = int(key_input)
-                decrypted_session_key = rsa_decrypt(key_int, (d, n))
-                cipher_bytes = custom_b64decode(b64_input)
-                pesan_asli = dual_decrypt(cipher_bytes, decrypted_session_key, iv)
-                
-                st.success("Pesan teks berhasil dibuka!")
-                st.write(f"**Kunci Sesi Asli yang Didapat:** `{decrypted_session_key}`")
-                st.text_area("Isi Pesan Asli:", value=pesan_asli, height=100, disabled=True)
-            except ValueError:
-                st.error("Gagal! Pastikan Kunci Sesi RSA hanya berupa angka.")
-            except Exception as err:
-                st.error("Gagal membuka pesan. Pastikan teks Base64 utuh.")
-        else:
-            st.warning("Harap isi teks Base64 dan Kunci RSA.")
+    with st.form("form_dekripsi_teks"):
+        b64_input = st.text_area("Masukkan Pesan Terenkripsi (Base64):", height=100)
+        key_input = st.text_input("Masukkan Kunci Sesi (Angka RSA):")
+        submitted_teks = st.form_submit_button("Dekripsi Teks Sekarang", type="primary")
+        
+        if submitted_teks:
+            if b64_input and key_input:
+                try:
+                    key_int = int(key_input)
+                    decrypted_session_key = rsa_decrypt(key_int, (d, n))
+                    cipher_bytes = custom_b64decode(b64_input)
+                    pesan_asli = dual_decrypt(cipher_bytes, decrypted_session_key, iv)
+                    
+                    st.success("Pesan teks berhasil dibuka!")
+                    st.write(f"**Kunci Sesi Asli yang Didapat:** `{decrypted_session_key}`")
+                    st.text_area("Isi Pesan Asli:", value=pesan_asli, height=100, disabled=True)
+                except ValueError:
+                    st.error("Gagal! Pastikan Kunci Sesi RSA hanya berupa angka.")
+                except Exception:
+                    st.error("Gagal membuka pesan. Pastikan teks Base64 utuh.")
+            else:
+                st.warning("Harap isi teks Base64 dan Kunci RSA.")
 
     st.divider()
     
     st.subheader("Buka File Rahasia (Gambar / Dokumen)")
-    b64_file_input = st.text_area("Masukkan Teks Enkripsi File:", height=150)
-    key_file_input = st.text_input("Masukkan Kunci Sesi (Angka RSA) untuk File:")
     
-    if st.button("Dekripsi File Sekarang", type="primary"):
-        if b64_file_input and key_file_input:
-            try:
-                key_int = int(key_file_input)
-                decrypted_session_key = rsa_decrypt(key_int, (d, n))
-                
-                cipher_bytes = custom_b64decode(b64_file_input)
-                file_string = dual_decrypt(cipher_bytes, decrypted_session_key, iv)
-                file_bytes = base64.b64decode(file_string)
-                
-                st.success("File berhasil dipulihkan! Silakan unduh di bawah ini.")
-                st.write(f"**Kunci Sesi Asli yang Didapat:** `{decrypted_session_key}`")
-                
-                st.download_button(
-                    label="Unduh File Hasil Dekripsi",
-                    data=file_bytes,
-                    file_name="file_rahasia_terbuka",
-                    mime="application/octet-stream"
-                )
-            except Exception as e:
-                st.error("Gagal! Pastikan kunci benar dan teks enkripsi file utuh.")
-        else:
-            st.warning("Harap isi teks Base64 dan Kunci RSA.")
+    with st.form("form_dekripsi_file"):
+        b64_file_input = st.text_area("Masukkan Teks Enkripsi File:", height=150)
+        key_file_input = st.text_input("Masukkan Kunci Sesi (Angka RSA) untuk File:")
+        submitted_file = st.form_submit_button("Dekripsi File Sekarang", type="primary")
+        
+        if submitted_file:
+            if b64_file_input and key_file_input:
+                try:
+                    key_int = int(key_file_input)
+                    decrypted_session_key = rsa_decrypt(key_int, (d, n))
+                    
+                    cipher_bytes = custom_b64decode(b64_file_input)
+                    file_string = dual_decrypt(cipher_bytes, decrypted_session_key, iv)
+                    file_bytes = base64.b64decode(file_string)
+                    
+                    st.success("File berhasil dipulihkan! Silakan unduh di bawah ini.")
+                    st.write(f"**Kunci Sesi Asli yang Didapat:** `{decrypted_session_key}`")
+                    
+                    st.download_button(
+                        label="Unduh File Hasil Dekripsi",
+                        data=file_bytes,
+                        file_name="file_rahasia_terbuka",
+                    )
+                except Exception:
+                    st.error("Gagal! Pastikan kunci benar dan teks enkripsi file utuh.")
+            else:
+                st.warning("Harap isi teks Base64 dan Kunci RSA.")
