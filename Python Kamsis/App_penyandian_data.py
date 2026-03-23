@@ -210,9 +210,13 @@ with tab2:
                 file_bytes = base64.b64decode(file_string)
                 
                 ekstensi_asli, tipe_mime = deteksi_ekstensi(file_bytes)
-                nama_file_otomatis = f"file_rahasia_terbuka{ekstensi_asli}"
+                nama_file_otomatis = f"file_Decrypt{ekstensi_asli}"
+
+                if tipe_mime.startswith('image/'):
+                    st.subheader("Review Gambar:")
+                    st.image(file_bytes, use_container_width=True)
                 
-                st.success("File berhasil dipulihkan! Silakan unduh di bawah ini.")
+                st.success("File berhasil dideskripsi! Silakan unduh di bawah ini.")
                 st.write(f"**Kunci Sesi Asli yang Didapat:** `{decrypted_session_key}`")
                 
                 st.download_button(
