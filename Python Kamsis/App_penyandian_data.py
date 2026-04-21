@@ -1,7 +1,7 @@
 import streamlit as st
 import base64
 
-st.set_page_config(page_title="Kripto Hibrida", page_icon="🔐")
+st.set_page_config(page_title="Kripto Hybrid", page_icon="🔐")
 
 B64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
@@ -117,8 +117,8 @@ def deteksi_ekstensi(bytes_data):
     elif bytes_data.startswith(b'\xd0\xcf\x11\xe0'): return '.doc', 'application/msword'
     else: return '.txt', 'text/plain'
 
-st.title("🔐 Kriptografi Hibrida")
-st.markdown("Aplikasi simulasi **Enkripsi Berlapis (Cascade CBC-OFB)** yang diamankan dengan pertukaran kunci **RSA**.")
+st.title("🔐 Kriptografi Hybrid")
+st.markdown("Aplikasi simulasi **Enkripsi Berlapis (CBC-OFB)** yang diamankan dengan pertukaran kunci **RSA**.")
 
 tab1, tab2 = st.tabs(["🔒 Enkripsi Pesan", "🔓 Dekripsi Pesan"])
 
