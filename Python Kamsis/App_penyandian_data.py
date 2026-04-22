@@ -134,7 +134,7 @@ with tab1:
     st.subheader("🔑 Pengaturan Kunci Sesi")
     st.info("Kunci ini digunakan untuk enkripsi data, dan akan diamankan otomatis oleh RSA (dikodekan per huruf).")
     
-    session_key = st.text_input("Masukkan Kunci Sesi Rahasia (Maks 10 huruf/angka):", max_chars=10, value="KUNCI123")
+    session_key = st.text_input("Masukkan Kunci Sesi Rahasia (Maks 20 huruf/angka):", max_chars=20, value="KUNCI123")
     
     st.divider()
 
